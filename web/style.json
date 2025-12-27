@@ -19,8 +19,8 @@
       "type": "line",
       "source": "vienna-districts",
       "paint": {
-        "line-color": "#000000",
-        "line-width": 2
+        "line-color": "#aaaaaa",
+        "line-width": 1
       }
     }
   ]
