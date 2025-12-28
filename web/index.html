@@ -52,6 +52,26 @@
 		#menu-content label {
 			white-space: nowrap;
 		}
+
+		#menu {
+			font-family: sans-serif;
+			font-size: 14px;
+		}
+
+		.group {
+			margin-bottom: 8px;
+		}
+
+		.sub {
+			margin-left: 18px;
+			opacity: 0.6;
+			pointer-events: none;
+		}
+
+		.sub.enabled {
+			opacity: 1;
+			pointer-events: auto;
+		}
 	</style>
 </head>
 
@@ -61,9 +81,23 @@
 	<div id="menu-container">
 		<button id="menu-toggle">Layers ▼</button>
 		<div id="menu-content">
-			<label><input type="checkbox" id="toggle-transport" checked>Show Transport</label>
-			<label><input type="checkbox" id="toggle-zones">Show Hiding Zones</label>
-			<label><input type="checkbox" id="toggle-museums">Show Museums</label>
+			<div id="menu">
+
+				<div class="group">
+					<label><input type="checkbox" id="toggle-stations" checked> Stations </label>
+					<div class="sub">
+						<label> <input type="checkbox" id="toggle-station-labels"> Station labels </label>
+					</div>
+				</div>
+				<label><input type="checkbox" id="toggle-zones">Show Hiding Zones</label>
+				<div class="group">
+					<label> <input type="checkbox" id="toggle-museums"> Museums </label>
+					<div class="sub">
+						<label> <input type="checkbox" id="toggle-museum-labels"> Museum labels </label>
+					</div>
+				</div>
+
+			</div>
 		</div>
 	</div>
 
@@ -110,9 +144,12 @@
 				}
 			});
 		}
-		const transportLayers = ["lines", "stations"];
-		const museumLayers = ["museums-icon", "museums-text"];
-		const zoneLayers = ["hiding-zones"];
+
+		const STATION_LAYERS = ["stations", "lines"];
+		const STATION_LABEL_LAYERS = ["station-labels"];
+		const ZONE_LAYERS = ["hiding-zones"];
+		const MUSEUM_LAYERS = ["museums-icon"];
+		const MUSEUM_LABEL_LAYERS = ["museums-text"];
 
 		fetch('data/districts.geojson')
 			.then(res => res.json())
@@ -169,24 +206,53 @@
 							"text-ignore-placement": false
 						}
 					});
+					const stationsCheckbox = document.getElementById("toggle-stations");
+					const stationLabelsCheckbox = document.getElementById("toggle-station-labels");
+					const stationSub = stationLabelsCheckbox.closest(".sub");
 
-					setLayerVisibility(transportLayers, true);
-					setLayerVisibility(museumLayers, false);
-					setLayerVisibility(zoneLayers, false);
+					stationsCheckbox.addEventListener("change", (e) => {
+						const on = e.target.checked;
+						setLayerVisibility(STATION_LAYERS, on);
+						stationSub.classList.toggle("enabled", on);
+						if (!on) {
+							stationLabelsCheckbox.checked = false;
+							setLayerVisibility(STATION_LABEL_LAYERS, false);
+						}
+					});
+					stationLabelsCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(STATION_LABEL_LAYERS, e.target.checked);
+					});
+					const zonesCheckbox = document.getElementById("toggle-zones");
+					zonesCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(ZONE_LAYERS, e.target.checked);
+					});
 
-					document.getElementById("toggle-transport")
-						.addEventListener("change", (e) => {
-							setLayerVisibility(transportLayers, e.target.checked);
-						});
+					const museumsCheckbox = document.getElementById("toggle-museums");
+					const museumLabelsCheckbox = document.getElementById("toggle-museum-labels");
+					const museumSub = museumLabelsCheckbox.closest(".sub");
 
-					document.getElementById("toggle-museums")
-						.addEventListener("change", (e) => {
-							setLayerVisibility(museumLayers, e.target.checked);
-						});
-					document.getElementById("toggle-zones")
-						.addEventListener("change", (e) => {
-							setLayerVisibility(zoneLayers, e.target.checked);
-						});
+					museumsCheckbox.addEventListener("change", (e) => {
+						const on = e.target.checked;
+						setLayerVisibility(MUSEUM_LAYERS, on);
+						museumSub.classList.toggle("enabled", on);
+
+						if (!on) {
+							museumLabelsCheckbox.checked = false;
+							setLayerVisibility(MUSEUM_LABEL_LAYERS, false);
+						}
+					});
+
+					museumLabelsCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(MUSEUM_LABEL_LAYERS, e.target.checked);
+					});
+
+					setLayerVisibility(STATION_LAYERS, true);
+					setLayerVisibility(STATION_LABEL_LAYERS, false);
+					stationSub.classList.add("enabled");
+
+					// Museums OFF
+					setLayerVisibility(MUSEUM_LAYERS, false);
+					setLayerVisibility(MUSEUM_LABEL_LAYERS, false);
 
 					const toggleButton = document.getElementById("menu-toggle");
 					const menuContent = document.getElementById("menu-content");

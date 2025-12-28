@@ -93,6 +93,29 @@
 			}
 		},
 		{
+			"id": "station-labels",
+			"type": "symbol",
+			"source": "vienna-transport",
+			"filter": [
+				"has",
+				"HTXT"
+			],
+			"layout": {
+				"text-field": [
+					"get",
+					"HTXT"
+				],
+				"text-size": 10,
+				"text-anchor": "left",
+				"text-offset": [
+					0.8,
+					0
+				],
+				"text-allow-overlap": false,
+				"text-ignore-placement": false
+			}
+		},
+		{
 			"id": "hiding-zones",
 			"type": "circle",
 			"source": "vienna-transport",
