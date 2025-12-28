@@ -70,6 +70,41 @@
 				],
 				"circle-opacity": 1.0
 			}
+		},
+		{
+			"id": "ubahn-station-radius-500m",
+			"type": "circle",
+			"source": "vienna-ubahn",
+			"filter": [
+				"has",
+				"HTXT"
+			],
+			"paint": {
+				"circle-radius": [
+					"interpolate",
+					[
+						"linear"
+					],
+					[
+						"zoom"
+					],
+					11,
+					15,
+					12,
+					30,
+					13,
+					60,
+					14,
+					120,
+					15,
+					240,
+					16,
+					480
+				],
+				"circle-color": "rgba(0,0,0,0)",
+				"circle-stroke-color": "#cccccc",
+				"circle-stroke-width": 1
+			}
 		}
 	]
 }
