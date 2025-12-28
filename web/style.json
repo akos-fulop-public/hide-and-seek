@@ -49,7 +49,7 @@
 				"HTXT"
 			],
 			"paint": {
-				"circle-radius": 4,
+				"circle-radius": 3,
 				"circle-color": [
 					"match",
 					[
@@ -83,27 +83,57 @@
 				"circle-radius": [
 					"interpolate",
 					[
-						"linear"
+						"exponential",
+						2
 					],
 					[
 						"zoom"
 					],
 					11,
-					15,
-					12,
-					30,
-					13,
-					60,
-					14,
-					120,
-					15,
-					240,
+					20,
 					16,
-					480
+					600
 				],
 				"circle-color": "rgba(0,0,0,0)",
 				"circle-stroke-color": "#cccccc",
 				"circle-stroke-width": 1
+			}
+		},
+		{
+			"id": "ubahn-lines",
+			"type": "line",
+			"source": "vienna-ubahn",
+			"filter": [
+				"!",
+				[
+					"has",
+					"HTXT"
+				]
+			],
+			"layout": {
+				"line-join": "round",
+				"line-cap": "round"
+			},
+			"paint": {
+				"line-width": 1,
+				"line-color": [
+					"match",
+					[
+						"get",
+						"LINFO"
+					],
+					1,
+					"#d6001c",
+					2,
+					"#6f2da8",
+					3,
+					"#f28c00",
+					4,
+					"#2e7d32",
+					6,
+					"#8b5a2b",
+					"#000000"
+				]
 			}
 		}
 	]
