@@ -10,9 +10,9 @@
 			"type": "geojson",
 			"data": "data/water.geojson"
 		},
-		"vienna-ubahn": {
+		"vienna-transport": {
 			"type": "geojson",
-			"data": "data/ubahn.geojson"
+			"data": "data/transport.geojson"
 		}
 	},
 	"layers": [
@@ -41,15 +41,28 @@
 			}
 		},
 		{
-			"id": "ubahn-stations",
+			"id": "stations",
 			"type": "circle",
-			"source": "vienna-ubahn",
+			"source": "vienna-transport",
 			"filter": [
 				"has",
 				"HTXT"
 			],
 			"paint": {
-				"circle-radius": 3,
+				"circle-radius": [
+					"interpolate",
+					[
+						"exponential",
+						2
+					],
+					[
+						"zoom"
+					],
+					11,
+					3,
+					16,
+					5
+				],
 				"circle-color": [
 					"match",
 					[
@@ -66,15 +79,19 @@
 					"#2e7d32",
 					6,
 					"#8b5a2b",
+					45,
+					"#a6d609",
+					1234,
+					"#e75480",
 					"#000000"
 				],
 				"circle-opacity": 1.0
 			}
 		},
 		{
-			"id": "ubahn-station-radius-500m",
+			"id": "hiding-zones",
 			"type": "circle",
-			"source": "vienna-ubahn",
+			"source": "vienna-transport",
 			"filter": [
 				"has",
 				"HTXT"
@@ -100,9 +117,9 @@
 			}
 		},
 		{
-			"id": "ubahn-lines",
+			"id": "lines",
 			"type": "line",
-			"source": "vienna-ubahn",
+			"source": "vienna-transport",
 			"filter": [
 				"!",
 				[
@@ -132,6 +149,10 @@
 					"#2e7d32",
 					6,
 					"#8b5a2b",
+					45,
+					"#a6d609",
+					1234,
+					"#e75480",
 					"#000000"
 				]
 			}

@@ -20,18 +20,50 @@
 			width: 100%;
 			height: 100%;
 		}
+
+		#menu-container {
+			position: absolute;
+			bottom: 10px;
+			right: 10px;
+			background: white;
+			border-radius: 4px;
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+			width: max-content;
+			font-family: sans-serif;
+		}
+
+		#menu-toggle {
+			display: block;
+			background: none;
+			border: none;
+			padding: 6px 12px;
+			cursor: pointer;
+			font-weight: bold;
+		}
+
+		#menu-content {
+			display: none;
+			/* initially hidden */
+			flex-direction: column;
+			gap: 4px;
+			padding: 4px 12px;
+		}
+
+		#menu-content label {
+			white-space: nowrap;
+		}
 	</style>
 </head>
 
 <body>
 
 	<div id="map"></div>
-	<div id="controls"
-		style="position: absolute; top: 10px; right: 10px; background: white; padding: 8px; border-radius: 4px; box-shadow: 0 0 5px rgba(0,0,0,0.3);">
-		<label>
-			<input type="checkbox" id="toggle-ubahn" checked>
-			Show U-Bahn
-		</label>
+	<div id="menu-container">
+		<button id="menu-toggle">Layers ▼</button>
+		<div id="menu-content">
+			<label><input type="checkbox" id="toggle-transport" checked>Show Transport</label>
+			<label><input type="checkbox" id="toggle-zones" checked>Show Hiding Zones</label>
+		</div>
 	</div>
 
 	<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
@@ -83,16 +115,35 @@
 					// fitBounds uses the original bounds with its own padding
 					map.fitBounds(bounds, { padding: 40 });
 
-					const ubahnLayers = ["ubahn-lines", "ubahn-stations", "ubahn-station-radius-500m"];
+					const transportLayers = ["lines", "stations"];
 
-					document.getElementById("toggle-ubahn").addEventListener("change", function (e) {
+					document.getElementById("toggle-transport").addEventListener("change", function (e) {
 						const visible = e.target.checked ? "visible" : "none";
 
-						ubahnLayers.forEach(layerId => {
+						transportLayers.forEach(layerId => {
 							if (map.getLayer(layerId)) {
 								map.setLayoutProperty(layerId, "visibility", visible);
 							}
 						});
+					});
+					document.getElementById("toggle-zones").addEventListener("change", function (e) {
+						const visible = e.target.checked ? "visible" : "none";
+						if (map.getLayer("hiding-zones")) {
+							map.setLayoutProperty("hiding-zones", "visibility", visible);
+						}
+					});
+
+					const toggleButton = document.getElementById("menu-toggle");
+					const menuContent = document.getElementById("menu-content");
+
+					toggleButton.addEventListener("click", () => {
+						if (menuContent.style.display === "flex") {
+							menuContent.style.display = "none";
+							toggleButton.textContent = "Layers ▼";
+						} else {
+							menuContent.style.display = "flex";
+							toggleButton.textContent = "Layers ▲";
+						}
 					});
 				});
 			});
