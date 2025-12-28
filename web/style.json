@@ -1,27 +1,39 @@
 {
-  "version": 8,
-  "sources": {
-    "vienna-districts": {
-      "type": "geojson",
-      "data": "data/wien.geojson"
-    }
-  },
-  "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "#ffffff"
-      }
-    },
-    {
-      "id": "district-outlines",
-      "type": "line",
-      "source": "vienna-districts",
-      "paint": {
-        "line-color": "#aaaaaa",
-        "line-width": 1
-      }
-    }
-  ]
+	"version": 8,
+	"sources": {
+		"vienna-districts": {
+			"type": "geojson",
+			"data": "data/districts.geojson"
+		},
+		"vienna-waters": {
+			"type": "geojson",
+			"data": "data/water.geojson"
+		}
+	},
+	"layers": [
+		{
+			"id": "background",
+			"type": "background",
+			"paint": {
+				"background-color": "#ffffff"
+			}
+		},
+		{
+			"id": "water",
+			"type": "fill",
+			"source": "vienna-waters",
+			"paint": {
+				"fill-color": "#c9f5ff"
+			}
+		},
+		{
+			"id": "district-outlines",
+			"type": "line",
+			"source": "vienna-districts",
+			"paint": {
+				"line-color": "#aaaaaa",
+				"line-width": 1
+			}
+		}
+	]
 }
