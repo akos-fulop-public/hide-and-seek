@@ -62,13 +62,20 @@
 		<button id="menu-toggle">Layers ▼</button>
 		<div id="menu-content">
 			<label><input type="checkbox" id="toggle-transport" checked>Show Transport</label>
-			<label><input type="checkbox" id="toggle-zones" checked>Show Hiding Zones</label>
+			<label><input type="checkbox" id="toggle-zones">Show Hiding Zones</label>
+			<label><input type="checkbox" id="toggle-museums">Show Museums</label>
 		</div>
 	</div>
 
 	<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
 	<script>
+		const map = new maplibregl.Map({
+			container: 'map',
+			style: 'style.json',
+			minZoom: 10,
+			maxZoom: 16
+		});
 		function extendBounds(bounds, geometry) {
 			if (geometry.type === 'Polygon') {
 				geometry.coordinates.forEach(ring => ring.forEach(coord => bounds.extend(coord)));
@@ -92,6 +99,21 @@
 			);
 		}
 
+		function setLayerVisibility(layerIds, visible) {
+			layerIds.forEach(id => {
+				if (map.getLayer(id)) {
+					map.setLayoutProperty(
+						id,
+						"visibility",
+						visible ? "visible" : "none"
+					);
+				}
+			});
+		}
+		const transportLayers = ["lines", "stations"];
+		const museumLayers = ["museums-icon", "museums-text"];
+		const zoneLayers = ["hiding-zones"];
+
 		fetch('data/districts.geojson')
 			.then(res => res.json())
 			.then(geojson => {
@@ -99,39 +121,72 @@
 				geojson.features.forEach(feature => extendBounds(bounds, feature.geometry));
 
 				// Apply padding to maxBounds
-				const paddedBounds = padBounds(bounds, 0.2);
-
-				const map = new maplibregl.Map({
-					container: 'map',
-					style: 'style.json',
-					maxBounds: paddedBounds,
-					minZoom: 10,
-					maxZoom: 16
-				});
+				map.setMaxBounds(padBounds(bounds, 0.2));
 
 				map.addControl(new maplibregl.NavigationControl());
 
 				map.on('load', () => {
-					// fitBounds uses the original bounds with its own padding
 					map.fitBounds(bounds, { padding: 40 });
 
-					const transportLayers = ["lines", "stations"];
+					map.loadImage("./data/museum.png", (error, image) => {
+						if (error) throw error;
 
-					document.getElementById("toggle-transport").addEventListener("change", function (e) {
-						const visible = e.target.checked ? "visible" : "none";
-
-						transportLayers.forEach(layerId => {
-							if (map.getLayer(layerId)) {
-								map.setLayoutProperty(layerId, "visibility", visible);
-							}
-						});
-					});
-					document.getElementById("toggle-zones").addEventListener("change", function (e) {
-						const visible = e.target.checked ? "visible" : "none";
-						if (map.getLayer("hiding-zones")) {
-							map.setLayoutProperty("hiding-zones", "visibility", visible);
+						if (!map.hasImage("museum-icon")) {
+							map.addImage("museum-icon", image, {
+								sdf: false
+							});
 						}
 					});
+
+					map.addLayer({
+						id: "museums-icon",
+						type: "symbol",
+						source: "vienna-museums",
+						layout: {
+							"icon-image": "museum-icon",
+							"icon-size": [
+								"interpolate",
+								["linear"],
+								["zoom"],
+								11, 0.5,
+								15, 0.8,
+								18, 1.2
+							],
+							"icon-allow-overlap": true,
+							"icon-ignore-placement": true
+						}
+					});
+					map.addLayer({
+						id: "museums-text",
+						type: "symbol",
+						source: "vienna-museums",
+						layout: {
+							"text-field": ["get", "NAME"],
+							"text-size": 10,
+							"text-anchor": "left",
+							"text-offset": [0.8, 0],
+							"text-allow-overlap": false,
+							"text-ignore-placement": false
+						}
+					});
+
+					setLayerVisibility(transportLayers, true);
+					setLayerVisibility(museumLayers, false);
+					setLayerVisibility(zoneLayers, false);
+
+					document.getElementById("toggle-transport")
+						.addEventListener("change", (e) => {
+							setLayerVisibility(transportLayers, e.target.checked);
+						});
+
+					document.getElementById("toggle-museums")
+						.addEventListener("change", (e) => {
+							setLayerVisibility(museumLayers, e.target.checked);
+						});
+					document.getElementById("toggle-zones")
+						.addEventListener("change", (e) => {
+							setLayerVisibility(zoneLayers, e.target.checked);
+						});
 
 					const toggleButton = document.getElementById("menu-toggle");
 					const menuContent = document.getElementById("menu-content");

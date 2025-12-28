@@ -13,6 +13,10 @@
 		"vienna-transport": {
 			"type": "geojson",
 			"data": "data/transport.geojson"
+		},
+		"vienna-museums": {
+			"type": "geojson",
+			"data": "data/museums.geojson"
 		}
 	},
 	"layers": [
