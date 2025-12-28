@@ -12,7 +12,7 @@
 		},
 		"vienna-ubahn": {
 			"type": "geojson",
-			"data": "data/metro.geojson"
+			"data": "data/ubahn.geojson"
 		}
 	},
 	"layers": [
@@ -41,7 +41,7 @@
 			}
 		},
 		{
-			"id": "metro-stations",
+			"id": "ubahn-stations",
 			"type": "circle",
 			"source": "vienna-ubahn",
 			"filter": [

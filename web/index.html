@@ -26,6 +26,13 @@
 <body>
 
 	<div id="map"></div>
+	<div id="controls"
+		style="position: absolute; top: 10px; right: 10px; background: white; padding: 8px; border-radius: 4px; box-shadow: 0 0 5px rgba(0,0,0,0.3);">
+		<label>
+			<input type="checkbox" id="toggle-ubahn" checked>
+			Show U-Bahn
+		</label>
+	</div>
 
 	<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
@@ -75,6 +82,18 @@
 				map.on('load', () => {
 					// fitBounds uses the original bounds with its own padding
 					map.fitBounds(bounds, { padding: 40 });
+
+					const ubahnLayers = ["ubahn-lines", "ubahn-stations", "ubahn-station-radius-500m"];
+
+					document.getElementById("toggle-ubahn").addEventListener("change", function (e) {
+						const visible = e.target.checked ? "visible" : "none";
+
+						ubahnLayers.forEach(layerId => {
+							if (map.getLayer(layerId)) {
+								map.setLayoutProperty(layerId, "visibility", visible);
+							}
+						});
+					});
 				});
 			});
 
