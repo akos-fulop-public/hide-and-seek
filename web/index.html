@@ -89,12 +89,17 @@
 						<label> <input type="checkbox" id="toggle-station-labels"> Station labels </label>
 					</div>
 				</div>
-				<label><input type="checkbox" id="toggle-zones">Show Hiding Zones</label>
+				<div class="group">
+					<label><input type="checkbox" id="toggle-zones">Show Hiding Zones</label>
+				</div>
 				<div class="group">
 					<label> <input type="checkbox" id="toggle-museums"> Museums </label>
 					<div class="sub">
 						<label> <input type="checkbox" id="toggle-museum-labels"> Museum labels </label>
 					</div>
+				</div>
+				<div class="group">
+					<label> <input type="checkbox" id="toggle-embassies"> Embassies </label>
 				</div>
 
 			</div>
@@ -150,6 +155,7 @@
 		const ZONE_LAYERS = ["hiding-zones"];
 		const MUSEUM_LAYERS = ["museums-icon"];
 		const MUSEUM_LABEL_LAYERS = ["museums-text"];
+		const EMBASSY_LAYERS = ["embassy-icon"];
 
 		fetch('data/districts.geojson')
 			.then(res => res.json())
@@ -170,6 +176,16 @@
 
 						if (!map.hasImage("museum-icon")) {
 							map.addImage("museum-icon", image, {
+								sdf: false
+							});
+						}
+					});
+
+					map.loadImage("./data/embassy.png", (error, image) => {
+						if (error) throw error;
+
+						if (!map.hasImage("embassy-icon")) {
+							map.addImage("embassy-icon", image, {
 								sdf: false
 							});
 						}
@@ -204,6 +220,25 @@
 							"text-offset": [0.8, 0],
 							"text-allow-overlap": false,
 							"text-ignore-placement": false
+						}
+					});
+
+					map.addLayer({
+						id: "embassy-icon",
+						type: "symbol",
+						source: "vienna-embassies",
+						layout: {
+							"icon-image": "embassy-icon",
+							"icon-size": [
+								"interpolate",
+								["linear"],
+								["zoom"],
+								11, 0.5,
+								15, 0.8,
+								18, 1.2
+							],
+							"icon-allow-overlap": true,
+							"icon-ignore-placement": true
 						}
 					});
 					const stationsCheckbox = document.getElementById("toggle-stations");
@@ -246,13 +281,20 @@
 						setLayerVisibility(MUSEUM_LABEL_LAYERS, e.target.checked);
 					});
 
+					const embassiesCheckbox = document.getElementById("toggle-embassies");
+					embassiesCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(EMBASSY_LAYERS, e.target.checked);
+					});
+
 					setLayerVisibility(STATION_LAYERS, true);
 					setLayerVisibility(STATION_LABEL_LAYERS, false);
 					stationSub.classList.add("enabled");
 
-					// Museums OFF
+					setLayerVisibility(ZONE_LAYERS, false);
 					setLayerVisibility(MUSEUM_LAYERS, false);
 					setLayerVisibility(MUSEUM_LABEL_LAYERS, false);
+
+					setLayerVisibility(EMBASSY_LAYERS, false);
 
 					const toggleButton = document.getElementById("menu-toggle");
 					const menuContent = document.getElementById("menu-content");

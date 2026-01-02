@@ -17,6 +17,10 @@
 		"vienna-museums": {
 			"type": "geojson",
 			"data": "data/museums.geojson"
+		},
+		"vienna-embassies": {
+			"type": "geojson",
+			"data": "data/embassies.geojson"
 		}
 	},
 	"layers": [
