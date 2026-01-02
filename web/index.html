@@ -100,6 +100,9 @@
 				</div>
 				<div class="group">
 					<label> <input type="checkbox" id="toggle-embassies"> Embassies </label>
+					<div class="sub">
+						<label> <input type="checkbox" id="toggle-embassy-labels"> Embassy labels </label>
+					</div>
 				</div>
 
 			</div>
@@ -156,6 +159,7 @@
 		const MUSEUM_LAYERS = ["museums-icon"];
 		const MUSEUM_LABEL_LAYERS = ["museums-text"];
 		const EMBASSY_LAYERS = ["embassy-icon"];
+		const EMBASSY_LABEL_LAYERS = ["embassy-text"];
 
 		fetch('data/districts.geojson')
 			.then(res => res.json())
@@ -241,6 +245,19 @@
 							"icon-ignore-placement": true
 						}
 					});
+					map.addLayer({
+						id: "embassy-text",
+						type: "symbol",
+						source: "vienna-embassies",
+						layout: {
+							"text-field": ["get", "NAME"],
+							"text-size": 10,
+							"text-anchor": "left",
+							"text-offset": [0.8, 0],
+							"text-allow-overlap": false,
+							"text-ignore-placement": false
+						}
+					});
 					const stationsCheckbox = document.getElementById("toggle-stations");
 					const stationLabelsCheckbox = document.getElementById("toggle-station-labels");
 					const stationSub = stationLabelsCheckbox.closest(".sub");
@@ -282,8 +299,21 @@
 					});
 
 					const embassiesCheckbox = document.getElementById("toggle-embassies");
+					const embassiesLabelsCheckbox = document.getElementById("toggle-embassy-labels");
+					const embassiesSub = embassiesLabelsCheckbox.closest(".sub");
 					embassiesCheckbox.addEventListener("change", (e) => {
-						setLayerVisibility(EMBASSY_LAYERS, e.target.checked);
+						const on = e.target.checked;
+						setLayerVisibility(EMBASSY_LAYERS, on);
+						embassiesSub.classList.toggle("enabled", on);
+
+						if (!on) {
+							embassiesLabelsCheckbox.checked = false;
+							setLayerVisibility(EMBASSY_LABEL_LAYERS, false);
+						}
+					});
+
+					embassiesLabelsCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(EMBASSY_LABEL_LAYERS, e.target.checked);
 					});
 
 					setLayerVisibility(STATION_LAYERS, true);
@@ -295,6 +325,7 @@
 					setLayerVisibility(MUSEUM_LABEL_LAYERS, false);
 
 					setLayerVisibility(EMBASSY_LAYERS, false);
+					setLayerVisibility(EMBASSY_LABEL_LAYERS, false);
 
 					const toggleButton = document.getElementById("menu-toggle");
 					const menuContent = document.getElementById("menu-content");
