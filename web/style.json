@@ -13,6 +13,10 @@
 		"vienna-transport": {
 			"type": "geojson",
 			"data": "data/transport.geojson"
+		},
+		"vienna-museums": {
+			"type": "geojson",
+			"data": "data/museums.geojson"
 		}
 	},
 	"layers": [
@@ -86,6 +90,29 @@
 					"#000000"
 				],
 				"circle-opacity": 1.0
+			}
+		},
+		{
+			"id": "station-labels",
+			"type": "symbol",
+			"source": "vienna-transport",
+			"filter": [
+				"has",
+				"HTXT"
+			],
+			"layout": {
+				"text-field": [
+					"get",
+					"HTXT"
+				],
+				"text-size": 10,
+				"text-anchor": "left",
+				"text-offset": [
+					0.8,
+					0
+				],
+				"text-allow-overlap": false,
+				"text-ignore-placement": false
 			}
 		},
 		{

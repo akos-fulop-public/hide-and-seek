@@ -52,6 +52,26 @@
 		#menu-content label {
 			white-space: nowrap;
 		}
+
+		#menu {
+			font-family: sans-serif;
+			font-size: 14px;
+		}
+
+		.group {
+			margin-bottom: 8px;
+		}
+
+		.sub {
+			margin-left: 18px;
+			opacity: 0.6;
+			pointer-events: none;
+		}
+
+		.sub.enabled {
+			opacity: 1;
+			pointer-events: auto;
+		}
 	</style>
 </head>
 
@@ -61,14 +81,35 @@
 	<div id="menu-container">
 		<button id="menu-toggle">Layers ▼</button>
 		<div id="menu-content">
-			<label><input type="checkbox" id="toggle-transport" checked>Show Transport</label>
-			<label><input type="checkbox" id="toggle-zones" checked>Show Hiding Zones</label>
+			<div id="menu">
+
+				<div class="group">
+					<label><input type="checkbox" id="toggle-stations" checked> Stations </label>
+					<div class="sub">
+						<label> <input type="checkbox" id="toggle-station-labels"> Station labels </label>
+					</div>
+				</div>
+				<label><input type="checkbox" id="toggle-zones">Show Hiding Zones</label>
+				<div class="group">
+					<label> <input type="checkbox" id="toggle-museums"> Museums </label>
+					<div class="sub">
+						<label> <input type="checkbox" id="toggle-museum-labels"> Museum labels </label>
+					</div>
+				</div>
+
+			</div>
 		</div>
 	</div>
 
 	<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
 	<script>
+		const map = new maplibregl.Map({
+			container: 'map',
+			style: 'style.json',
+			minZoom: 10,
+			maxZoom: 16
+		});
 		function extendBounds(bounds, geometry) {
 			if (geometry.type === 'Polygon') {
 				geometry.coordinates.forEach(ring => ring.forEach(coord => bounds.extend(coord)));
@@ -92,6 +133,24 @@
 			);
 		}
 
+		function setLayerVisibility(layerIds, visible) {
+			layerIds.forEach(id => {
+				if (map.getLayer(id)) {
+					map.setLayoutProperty(
+						id,
+						"visibility",
+						visible ? "visible" : "none"
+					);
+				}
+			});
+		}
+
+		const STATION_LAYERS = ["stations", "lines"];
+		const STATION_LABEL_LAYERS = ["station-labels"];
+		const ZONE_LAYERS = ["hiding-zones"];
+		const MUSEUM_LAYERS = ["museums-icon"];
+		const MUSEUM_LABEL_LAYERS = ["museums-text"];
+
 		fetch('data/districts.geojson')
 			.then(res => res.json())
 			.then(geojson => {
@@ -99,39 +158,101 @@
 				geojson.features.forEach(feature => extendBounds(bounds, feature.geometry));
 
 				// Apply padding to maxBounds
-				const paddedBounds = padBounds(bounds, 0.2);
-
-				const map = new maplibregl.Map({
-					container: 'map',
-					style: 'style.json',
-					maxBounds: paddedBounds,
-					minZoom: 10,
-					maxZoom: 16
-				});
+				map.setMaxBounds(padBounds(bounds, 0.2));
 
 				map.addControl(new maplibregl.NavigationControl());
 
 				map.on('load', () => {
-					// fitBounds uses the original bounds with its own padding
 					map.fitBounds(bounds, { padding: 40 });
 
-					const transportLayers = ["lines", "stations"];
+					map.loadImage("./data/museum.png", (error, image) => {
+						if (error) throw error;
 
-					document.getElementById("toggle-transport").addEventListener("change", function (e) {
-						const visible = e.target.checked ? "visible" : "none";
-
-						transportLayers.forEach(layerId => {
-							if (map.getLayer(layerId)) {
-								map.setLayoutProperty(layerId, "visibility", visible);
-							}
-						});
-					});
-					document.getElementById("toggle-zones").addEventListener("change", function (e) {
-						const visible = e.target.checked ? "visible" : "none";
-						if (map.getLayer("hiding-zones")) {
-							map.setLayoutProperty("hiding-zones", "visibility", visible);
+						if (!map.hasImage("museum-icon")) {
+							map.addImage("museum-icon", image, {
+								sdf: false
+							});
 						}
 					});
+
+					map.addLayer({
+						id: "museums-icon",
+						type: "symbol",
+						source: "vienna-museums",
+						layout: {
+							"icon-image": "museum-icon",
+							"icon-size": [
+								"interpolate",
+								["linear"],
+								["zoom"],
+								11, 0.5,
+								15, 0.8,
+								18, 1.2
+							],
+							"icon-allow-overlap": true,
+							"icon-ignore-placement": true
+						}
+					});
+					map.addLayer({
+						id: "museums-text",
+						type: "symbol",
+						source: "vienna-museums",
+						layout: {
+							"text-field": ["get", "NAME"],
+							"text-size": 10,
+							"text-anchor": "left",
+							"text-offset": [0.8, 0],
+							"text-allow-overlap": false,
+							"text-ignore-placement": false
+						}
+					});
+					const stationsCheckbox = document.getElementById("toggle-stations");
+					const stationLabelsCheckbox = document.getElementById("toggle-station-labels");
+					const stationSub = stationLabelsCheckbox.closest(".sub");
+
+					stationsCheckbox.addEventListener("change", (e) => {
+						const on = e.target.checked;
+						setLayerVisibility(STATION_LAYERS, on);
+						stationSub.classList.toggle("enabled", on);
+						if (!on) {
+							stationLabelsCheckbox.checked = false;
+							setLayerVisibility(STATION_LABEL_LAYERS, false);
+						}
+					});
+					stationLabelsCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(STATION_LABEL_LAYERS, e.target.checked);
+					});
+					const zonesCheckbox = document.getElementById("toggle-zones");
+					zonesCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(ZONE_LAYERS, e.target.checked);
+					});
+
+					const museumsCheckbox = document.getElementById("toggle-museums");
+					const museumLabelsCheckbox = document.getElementById("toggle-museum-labels");
+					const museumSub = museumLabelsCheckbox.closest(".sub");
+
+					museumsCheckbox.addEventListener("change", (e) => {
+						const on = e.target.checked;
+						setLayerVisibility(MUSEUM_LAYERS, on);
+						museumSub.classList.toggle("enabled", on);
+
+						if (!on) {
+							museumLabelsCheckbox.checked = false;
+							setLayerVisibility(MUSEUM_LABEL_LAYERS, false);
+						}
+					});
+
+					museumLabelsCheckbox.addEventListener("change", (e) => {
+						setLayerVisibility(MUSEUM_LABEL_LAYERS, e.target.checked);
+					});
+
+					setLayerVisibility(STATION_LAYERS, true);
+					setLayerVisibility(STATION_LABEL_LAYERS, false);
+					stationSub.classList.add("enabled");
+
+					// Museums OFF
+					setLayerVisibility(MUSEUM_LAYERS, false);
+					setLayerVisibility(MUSEUM_LABEL_LAYERS, false);
 
 					const toggleButton = document.getElementById("menu-toggle");
 					const menuContent = document.getElementById("menu-content");
